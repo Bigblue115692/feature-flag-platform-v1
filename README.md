@@ -155,6 +155,13 @@ npm install
 npm run dev
 ```
 
+## Load testing
+
+The repository includes a reproducible k6 evaluation test with a live dashboard
+at `http://localhost:5665` and an exported HTML report. See
+[`docs/LOAD_TESTING.md`](docs/LOAD_TESTING.md) for the smoke-test and five-minute
+baseline commands.
+
 ## Important endpoints
 
 ```text

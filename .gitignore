@@ -14,3 +14,5 @@ dist/
 .idea/
 .vscode/
 *.log
+load-tests/results/*
+!load-tests/results/.gitkeep

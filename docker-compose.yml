@@ -76,5 +76,29 @@ services:
       - backend
       - frontend
 
+  k6:
+    image: grafana/k6:2.2.0
+    profiles:
+      - loadtest
+    environment:
+      BASE_URL: http://nginx
+      RATE: ${K6_RATE:-10}
+      DURATION: ${K6_DURATION:-15s}
+      PRE_ALLOCATED_VUS: ${K6_PRE_ALLOCATED_VUS:-25}
+      MAX_VUS: ${K6_MAX_VUS:-200}
+      K6_WEB_DASHBOARD: "true"
+      K6_WEB_DASHBOARD_HOST: 0.0.0.0
+      K6_WEB_DASHBOARD_PORT: 5665
+      K6_WEB_DASHBOARD_PERIOD: 1s
+      K6_WEB_DASHBOARD_EXPORT: /load-tests/results/latest.html
+      K6_LINGER: "false"
+    volumes:
+      - ./load-tests:/load-tests
+    ports:
+      - "5665:5665"
+    depends_on:
+      - nginx
+    command: run /load-tests/k6/evaluate.js
+
 volumes:
   postgres_data:
