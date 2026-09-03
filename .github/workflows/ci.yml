@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: featureflags
+          POSTGRES_USER: featureflags
+          POSTGRES_PASSWORD: featureflags
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U featureflags"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+
+    env:
+      DJANGO_SECRET_KEY: ci
+      DJANGO_DEBUG: 0
+      POSTGRES_DB: featureflags
+      POSTGRES_USER: featureflags
+      POSTGRES_PASSWORD: featureflags
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+      REDIS_URL: redis://localhost:6379/0
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r backend/requirements.txt
+      - run: python backend/manage.py migrate
+      - run: python backend/manage.py test apps
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - working-directory: frontend
+        run: npm ci
+      - working-directory: frontend
+        run: npm run test -- --run
+      - working-directory: frontend
+        run: npm run build
