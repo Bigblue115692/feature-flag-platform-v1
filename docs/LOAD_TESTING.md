@@ -66,3 +66,7 @@ and the 25% stable rollout produces both enabled and disabled decisions.
 These are initial correctness and reliability thresholds, not final performance
 claims. Record the hardware, Docker resource limits, commit, rate, and duration
 with every published result.
+
+## Published results
+
+- [2026-09-03 V1 remote evaluation baseline](benchmarks/2026-09-03-v1-baseline/README.md)
