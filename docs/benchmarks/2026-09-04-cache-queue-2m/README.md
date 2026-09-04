@@ -1,6 +1,6 @@
 # Cached + Queued-Audit Two-Minute Ramp — 2026-09-04
 
-![Dark-mode k6 overview](overview-dark.png)
+![Readable dark benchmark summary](readable-summary-dark.png)
 
 ## Result
 
@@ -52,11 +52,14 @@ zero, confirming that audit persistence remained asynchronous during the run.
 
 ## Artifacts
 
-- [Open the interactive GitHub Pages dashboard](https://bigblue115692.github.io/feature-flag-platform-v1/benchmarks/2026-09-04-cache-queue-2m/report.html)
+- [Open the readable interactive summary](https://bigblue115692.github.io/feature-flag-platform-v1/benchmarks/2026-09-04-cache-queue-2m/summary.html)
+- [Open the detailed interactive k6 dashboard](https://bigblue115692.github.io/feature-flag-platform-v1/benchmarks/2026-09-04-cache-queue-2m/report.html)
 - [Backup interactive preview](https://rawcdn.githack.com/Bigblue115692/feature-flag-platform-v1/7d142be4e6906ee0c901ee0b886c7822269bdcf5/docs/benchmarks/2026-09-04-cache-queue-2m/report.html) (shows a one-time safety confirmation)
 - [Download the self-contained report](report.html)
-- [View the dark overview](overview-dark.png)
+- [View the readable dark summary](readable-summary-dark.png)
+- [View the original auto-darkened overview](overview-dark.png)
 - [View the full dark dashboard](full-report-dark.png)
 - [View the exact k6 scenario](../../../load-tests/k6/throughput-2m.js)
 
-![Full dark-mode k6 dashboard](full-report-dark.png)
+The original k6 screenshots are retained as raw artifacts, but the summary above
+is the recommended view because its units and labels remain legible on GitHub.
