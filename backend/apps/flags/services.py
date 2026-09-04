@@ -1,11 +1,10 @@
 from django.db import transaction
-from django.forms.models import model_to_dict
 from django.conf import settings
 
 from apps.audit.models import AuditEvent
 from apps.audit.services import AuditService
 from .cache import FlagCache
-from .evaluation import EvaluationContext, FeatureEvaluator
+from .evaluation import EvaluationContext, FeatureEvaluator, FlagConfiguration
 from .repositories import FeatureFlagRepository
 
 class FeatureFlagService:
@@ -13,7 +12,7 @@ class FeatureFlagService:
     @transaction.atomic
     def create_flag(*, validated_data, actor="", request_id=""):
         flag = FeatureFlagRepository.create(**validated_data)
-        AuditService.record(
+        AuditService.enqueue(
             entity_type="feature_flag",
             entity_id=flag.id,
             action=AuditEvent.ACTION_CREATE,
@@ -21,7 +20,6 @@ class FeatureFlagService:
             request_id=request_id,
             metadata={"after": FeatureFlagService.snapshot(flag)},
         )
-        FlagCache.invalidate(flag)
         return flag
 
     @staticmethod
@@ -31,7 +29,7 @@ class FeatureFlagService:
         updated = FeatureFlagRepository.update(flag, **validated_data)
         after = FeatureFlagService.snapshot(updated)
 
-        AuditService.record(
+        AuditService.enqueue(
             entity_type="feature_flag",
             entity_id=updated.id,
             action=AuditEvent.ACTION_UPDATE,
@@ -40,7 +38,6 @@ class FeatureFlagService:
             metadata={"before": before, "after": after},
         )
 
-        FlagCache.invalidate(updated)
         return updated
 
     @staticmethod
@@ -48,9 +45,7 @@ class FeatureFlagService:
     def delete_flag(*, flag, actor="", request_id=""):
         before = FeatureFlagService.snapshot(flag)
         flag_id = flag.id
-        FlagCache.invalidate(flag)
-
-        AuditService.record(
+        AuditService.enqueue(
             entity_type="feature_flag",
             entity_id=flag_id,
             action=AuditEvent.ACTION_DELETE,
@@ -62,11 +57,17 @@ class FeatureFlagService:
 
     @staticmethod
     def evaluate(*, project_key, environment_key, flag_key, user, actor="", request_id=""):
-        flag = FeatureFlagRepository.get_for_evaluation(
-            project_key=project_key,
-            environment_key=environment_key,
-            flag_key=flag_key,
-        )
+        payload = FlagCache.get(project_key, environment_key, flag_key)
+        if payload is None:
+            flag = FeatureFlagRepository.get_for_evaluation(
+                project_key=project_key,
+                environment_key=environment_key,
+                flag_key=flag_key,
+            )
+            payload = FlagCache.serialize(flag)
+            FlagCache.set(project_key, environment_key, flag_key, payload)
+
+        flag = FlagConfiguration.from_payload(payload)
 
         user_id = str(user.get("id", ""))
         attributes = dict(user)
@@ -79,7 +80,7 @@ class FeatureFlagService:
         result = FeatureEvaluator.evaluate(flag, context)
 
         if settings.EVALUATION_AUDIT_ENABLED:
-            AuditService.record(
+            AuditService.enqueue(
                 entity_type="feature_flag",
                 entity_id=flag.id,
                 action=AuditEvent.ACTION_EVALUATE,

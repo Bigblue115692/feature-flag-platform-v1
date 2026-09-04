@@ -2,8 +2,8 @@
 
 The evaluation load test uses k6's constant-arrival-rate executor so the target
 request rate remains independent of response latency. It exercises the complete
-remote path: Nginx, Django, PostgreSQL configuration reads, deterministic
-bucketing, and synchronous audit writes.
+remote path: Nginx, Django, Redis-cached flag configuration, deterministic
+bucketing, and durable queued audit delivery.
 
 ## Live dashboard
 
@@ -72,3 +72,4 @@ with every published result.
 - [2026-09-03 V1 remote evaluation baseline](benchmarks/2026-09-03-v1-baseline/README.md)
 - [2026-09-04 V1 maximum-throughput ramp](benchmarks/2026-09-04-throughput-ramp/README.md)
 - [2026-09-04 V1 no-audit comparison](benchmarks/2026-09-04-no-audit-comparison/README.md)
+- [2026-09-04 cached configuration + queued-audit ramp](benchmarks/2026-09-04-cache-queue-2m/README.md)

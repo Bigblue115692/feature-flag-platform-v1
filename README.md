@@ -24,8 +24,9 @@ A production-flavored full-stack feature management platform built for study.
 - Attribute targeting rules
 - Stable user bucketing
 - Audit logging
+- Durable queued audit writes
 - Evaluation endpoint
-- Cache invalidation
+- Redis-backed flag-configuration caching and invalidation
 - Rate limiting hooks
 - Health/readiness endpoints
 - Service + repository architecture
@@ -51,8 +52,8 @@ Django REST Framework
       +--> Service layer
       |      |
       |      +--> Evaluation engine
-      |      +--> Audit service
-      |      +--> Cache service
+      |      +--> Redis flag-configuration cache
+      |      +--> Durable audit queue
       |
       +--> Repository layer
               |
@@ -62,8 +63,8 @@ Django REST Framework
               v
           PostgreSQL
 
-Redis <---- cache / rate-limit data
-Celery <--- background jobs
+Redis <---- flag cache / rate limits / durable Celery broker
+Celery ---> asynchronous audit writer ---> PostgreSQL
 ```
 
 ## Why this project is intentionally layered
@@ -80,8 +81,8 @@ React button
   -> FeatureFlagService.update_flag()
   -> FeatureFlagRepository.update()
   -> PostgreSQL
-  -> AuditService.record()
-  -> cache invalidation
+  -> enqueue audit event after commit
+  -> invalidate cached configuration after commit
   -> HTTP response
   -> React state refresh
 ```
@@ -167,6 +168,7 @@ Published results:
 - [2026-09-03 V1 remote evaluation baseline](docs/benchmarks/2026-09-03-v1-baseline/README.md)
 - [2026-09-04 V1 maximum-throughput ramp](docs/benchmarks/2026-09-04-throughput-ramp/README.md)
 - [2026-09-04 V1 no-audit comparison](docs/benchmarks/2026-09-04-no-audit-comparison/README.md)
+- [2026-09-04 cached configuration + queued-audit ramp](docs/benchmarks/2026-09-04-cache-queue-2m/README.md)
 
 ## Important endpoints
 

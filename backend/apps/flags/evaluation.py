@@ -12,6 +12,67 @@ class EvaluationContext:
     attributes: dict[str, Any]
 
 @dataclass(frozen=True)
+class TargetingRuleConfiguration:
+    id: int
+    attribute: str
+    operator: str
+    comparison_value: Any
+    enabled: bool
+    serve_value: Any
+
+@dataclass(frozen=True)
+class FlagConfiguration:
+    id: int
+    project_key: str
+    environment_key: str
+    key: str
+    enabled: bool
+    rollout_percentage: int
+    premium_only: bool
+    default_value: Any
+    off_value: Any
+    version: int
+    targeting_rules: tuple[TargetingRuleConfiguration, ...]
+
+    @classmethod
+    def from_payload(cls, payload):
+        return cls(
+            **{
+                **payload,
+                "targeting_rules": tuple(
+                    TargetingRuleConfiguration(**rule)
+                    for rule in payload["targeting_rules"]
+                ),
+            }
+        )
+
+    @classmethod
+    def from_model(cls, flag):
+        return cls(
+            id=flag.id,
+            project_key=flag.environment.project.key,
+            environment_key=flag.environment.key,
+            key=flag.key,
+            enabled=flag.enabled,
+            rollout_percentage=flag.rollout_percentage,
+            premium_only=flag.premium_only,
+            default_value=flag.default_value,
+            off_value=flag.off_value,
+            version=flag.version,
+            targeting_rules=tuple(
+                TargetingRuleConfiguration(
+                    id=rule.id,
+                    attribute=rule.attribute,
+                    operator=rule.operator,
+                    comparison_value=rule.comparison_value,
+                    enabled=rule.enabled,
+                    serve_value=rule.serve_value,
+                )
+                for rule in flag.targeting_rules.all()
+            ),
+        )
+
+@dataclass(frozen=True)
 class EvaluationResult:
     flag_key: str
     enabled: bool
@@ -42,7 +103,7 @@ class StableBucketer:
 
 class TargetingEvaluator:
     @staticmethod
-    def matches(rule: TargetingRule, attributes: dict[str, Any]) -> bool:
+    def matches(rule: TargetingRuleConfiguration, attributes: dict[str, Any]) -> bool:
         actual = attributes.get(rule.attribute)
         expected = rule.comparison_value
 
@@ -71,7 +132,9 @@ class TargetingEvaluator:
 
 class FeatureEvaluator:
     @classmethod
-    def evaluate(cls, flag: FeatureFlag, context: EvaluationContext) -> EvaluationResult:
+    def evaluate(cls, flag: FeatureFlag | FlagConfiguration, context: EvaluationContext) -> EvaluationResult:
+        if isinstance(flag, FeatureFlag):
+            flag = FlagConfiguration.from_model(flag)
         if not flag.enabled:
             return EvaluationResult(
                 flag_key=flag.key,
@@ -97,7 +160,7 @@ class FeatureEvaluator:
         matched_rule = None
         matched_value = None
 
-        for rule in flag.targeting_rules.all():
+        for rule in flag.targeting_rules:
             if rule.enabled and TargetingEvaluator.matches(rule, context.attributes):
                 matched_rule = rule.id
                 matched_value = rule.serve_value
@@ -139,8 +202,8 @@ class FeatureEvaluator:
             )
 
         bucket = StableBucketer.bucket(
-            project_key=flag.environment.project.key,
-            environment_key=flag.environment.key,
+            project_key=flag.project_key,
+            environment_key=flag.environment_key,
             flag_key=flag.key,
             user_id=context.user_id,
         )
