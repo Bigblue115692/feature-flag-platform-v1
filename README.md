@@ -166,6 +166,7 @@ Published results:
 
 - [2026-09-03 V1 remote evaluation baseline](docs/benchmarks/2026-09-03-v1-baseline/README.md)
 - [2026-09-04 V1 maximum-throughput ramp](docs/benchmarks/2026-09-04-throughput-ramp/README.md)
+- [2026-09-04 V1 no-audit comparison](docs/benchmarks/2026-09-04-no-audit-comparison/README.md)
 
 ## Important endpoints
 

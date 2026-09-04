@@ -1,5 +1,6 @@
 from django.db import transaction
 from django.forms.models import model_to_dict
+from django.conf import settings
 
 from apps.audit.models import AuditEvent
 from apps.audit.services import AuditService
@@ -77,19 +78,20 @@ class FeatureFlagService:
         )
         result = FeatureEvaluator.evaluate(flag, context)
 
-        AuditService.record(
-            entity_type="feature_flag",
-            entity_id=flag.id,
-            action=AuditEvent.ACTION_EVALUATE,
-            actor=actor or user_id,
-            request_id=request_id,
-            metadata={
-                "project_key": project_key,
-                "environment_key": environment_key,
-                "flag_key": flag_key,
-                "result": result.as_dict(),
-            },
-        )
+        if settings.EVALUATION_AUDIT_ENABLED:
+            AuditService.record(
+                entity_type="feature_flag",
+                entity_id=flag.id,
+                action=AuditEvent.ACTION_EVALUATE,
+                actor=actor or user_id,
+                request_id=request_id,
+                metadata={
+                    "project_key": project_key,
+                    "environment_key": environment_key,
+                    "flag_key": flag_key,
+                    "result": result.as_dict(),
+                },
+            )
 
         return result
 

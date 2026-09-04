@@ -1,6 +1,7 @@
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from rest_framework.test import APIClient
 
+from apps.audit.models import AuditEvent
 from apps.flags.models import Environment, FeatureFlag, Project
 
 class FeatureFlagApiTests(TestCase):
@@ -51,3 +52,25 @@ class FeatureFlagApiTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.json()["enabled"])
+        self.assertEqual(
+            AuditEvent.objects.filter(action=AuditEvent.ACTION_EVALUATE).count(),
+            1,
+        )
+
+    @override_settings(EVALUATION_AUDIT_ENABLED=False)
+    def test_evaluate_can_skip_audit_event(self):
+        response = self.client.post(
+            "/api/v1/evaluate/",
+            {
+                "project_key": "checkout",
+                "environment_key": "production",
+                "flag_key": "new_checkout",
+                "user": {"id": "user-1"},
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(
+            AuditEvent.objects.filter(action=AuditEvent.ACTION_EVALUATE).exists()
+        )

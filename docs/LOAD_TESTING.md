@@ -71,3 +71,4 @@ with every published result.
 
 - [2026-09-03 V1 remote evaluation baseline](benchmarks/2026-09-03-v1-baseline/README.md)
 - [2026-09-04 V1 maximum-throughput ramp](benchmarks/2026-09-04-throughput-ramp/README.md)
+- [2026-09-04 V1 no-audit comparison](benchmarks/2026-09-04-no-audit-comparison/README.md)
