@@ -52,7 +52,8 @@ zero, confirming that audit persistence remained asynchronous during the run.
 
 ## Artifacts
 
-- [Open the interactive dashboard](https://bigblue115692.github.io/feature-flag-platform-v1/benchmarks/2026-09-04-cache-queue-2m/report.html)
+- [Open the interactive dashboard now](https://rawcdn.githack.com/Bigblue115692/feature-flag-platform-v1/7d142be4e6906ee0c901ee0b886c7822269bdcf5/docs/benchmarks/2026-09-04-cache-queue-2m/report.html) (the preview host shows a one-time safety confirmation)
+- [GitHub Pages dashboard](https://bigblue115692.github.io/feature-flag-platform-v1/benchmarks/2026-09-04-cache-queue-2m/report.html) (available after Pages is enabled)
 - [Download the self-contained report](report.html)
 - [View the dark overview](overview-dark.png)
 - [View the full dark dashboard](full-report-dark.png)
