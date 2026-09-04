@@ -162,7 +162,10 @@ at `http://localhost:5665` and an exported HTML report. See
 [`docs/LOAD_TESTING.md`](docs/LOAD_TESTING.md) for the smoke-test and five-minute
 baseline commands.
 
-Published result: [2026-09-03 V1 remote evaluation baseline](docs/benchmarks/2026-09-03-v1-baseline/README.md).
+Published results:
+
+- [2026-09-03 V1 remote evaluation baseline](docs/benchmarks/2026-09-03-v1-baseline/README.md)
+- [2026-09-04 V1 maximum-throughput ramp](docs/benchmarks/2026-09-04-throughput-ramp/README.md)
 
 ## Important endpoints
 
